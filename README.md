@@ -35,7 +35,7 @@ A beautiful, customizable analog clock application for macOS. VibeFloatingClock 
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd VibeClock
+cd  vibe-floating-analog-clock
 ```
 
 2. Create a build directory:
