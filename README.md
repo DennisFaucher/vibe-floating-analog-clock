@@ -5,7 +5,7 @@ Today, I could no longer install my favorite SimpleFloatingClock.app, so I asked
 A beautiful, customizable analog clock application for macOS. VibeFloatingClock features a classic Swiss railway clock design with a circular, borderless window that can be positioned anywhere on your screen.
 
 ![VibeClock](https://img.shields.io/badge/macOS-10.14+-blue.svg)
-![License](https://img.shields.io/badge/license-MIT-green.svg)
+![License]((https://img.shields.io/badge/license-GPL--v3.0-green.svg)
 
 ## Features
 
