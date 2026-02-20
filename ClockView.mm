@@ -6,6 +6,8 @@
     NSTimer *_timer;
     ClockSettings *_settings;
     NSTrackingArea *_trackingArea;
+    NSDateFormatter *_dateFormatter;
+    NSCalendar *_tzCalendar;
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
@@ -32,6 +34,12 @@
         
         // Create tracking area for cursor updates
         [self updateTrackingAreas];
+        
+        // Reusable date formatter and calendar (avoid allocating every second in drawRect)
+        _dateFormatter = [[NSDateFormatter alloc] init];
+        [_dateFormatter setTimeZone:[NSTimeZone localTimeZone]];
+        [_dateFormatter setDateFormat:@"HH:mm:ss"];
+        _tzCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     }
     return self;
 }
@@ -42,6 +50,8 @@
     if (_trackingArea) {
         [self removeTrackingArea:_trackingArea];
     }
+    [_dateFormatter release];
+    [_tzCalendar release];
     [super dealloc];
 }
 
@@ -183,11 +193,8 @@
         CGContextRestoreGState(cgContext);
     }
     
-    // Get current time using NSDateFormatter to ensure local timezone
-    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
-    [formatter setTimeZone:[NSTimeZone localTimeZone]];
-    [formatter setDateFormat:@"HH:mm:ss"];
-    NSString *timeString = [formatter stringFromDate:[NSDate date]];
+    // Get current time using cached date formatter (local timezone already set in init)
+    NSString *timeString = [_dateFormatter stringFromDate:[NSDate date]];
     
     // Parse hour and minute from string to ensure we get correct values
     NSArray *timeParts = [timeString componentsSeparatedByString:@":"];
@@ -221,10 +228,9 @@
             tz = [NSTimeZone timeZoneWithAbbreviation:tzHandTimezone];
         }
         if (tz) {
-            NSCalendar *tzCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-            [tzCalendar setTimeZone:tz];
+            [_tzCalendar setTimeZone:tz];
             NSDate *now = [NSDate date];
-            NSDateComponents *tzComponents = [tzCalendar components:(NSCalendarUnitHour | NSCalendarUnitMinute) fromDate:now];
+            NSDateComponents *tzComponents = [_tzCalendar components:(NSCalendarUnitHour | NSCalendarUnitMinute) fromDate:now];
             NSInteger tzHour = [tzComponents hour];
             NSInteger tzMinute = [tzComponents minute];
             NSInteger tzHour12 = tzHour % 12;
@@ -321,6 +327,7 @@
                                      actualPosition.y - textSize.height / 2);
     
     [attributedDayString drawAtPoint:textOrigin];
+    [attributedDayString release];
     
     // Restore context state
     CGContextRestoreGState(cgContext);

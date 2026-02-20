@@ -11,20 +11,35 @@
 @implementation AppDelegate
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    // Get diameter from settings
     ClockSettings *settings = [ClockSettings sharedSettings];
     CGFloat diameter = [settings windowDiameter];
     
-    // Create clock window with diameter from settings
-    NSRect windowRect = NSMakeRect(100, 100, diameter, diameter);
+    // Use saved position if available, otherwise default and center
+    NSPoint origin;
+    if ([settings hasSavedWindowPosition]) {
+        origin = [settings windowOrigin];
+    } else {
+        origin = NSMakePoint(100, 100);
+    }
+    NSRect windowRect = NSMakeRect(origin.x, origin.y, diameter, diameter);
     self.clockWindow = [[ClockWindow alloc] initWithContentRect:windowRect];
     
-    // Show the clock window
     [self.clockWindow makeKeyAndOrderFront:nil];
-    [self.clockWindow center];
+    if (![settings hasSavedWindowPosition]) {
+        [self.clockWindow center];
+    }
     
-    // Sync menu item states with settings
+    // Apply Always on Top from settings
+    if ([settings alwaysOnTop]) {
+        [self.clockWindow setLevel:NSFloatingWindowLevel];
+    }
+    
+    // Sync View menu item states with settings
     NSMenu *viewMenu = [[[NSApp mainMenu] itemWithTitle:@"View"] submenu];
+    NSMenuItem *alwaysOnTopItem = [viewMenu itemWithTitle:@"Always on Top"];
+    if (alwaysOnTopItem) {
+        [alwaysOnTopItem setState:[settings alwaysOnTop] ? NSControlStateValueOn : NSControlStateValueOff];
+    }
     NSMenuItem *clickThroughItem = [viewMenu itemWithTitle:@"Click Through"];
     if (clickThroughItem) {
         [clickThroughItem setState:[settings clickThrough] ? NSControlStateValueOn : NSControlStateValueOff];
@@ -53,6 +68,8 @@
 - (IBAction)toggleAlwaysOnTop:(id)sender {
     NSMenuItem *menuItem = (NSMenuItem *)sender;
     BOOL isOnTop = [menuItem state] == NSControlStateValueOff;
+    ClockSettings *settings = [ClockSettings sharedSettings];
+    [settings setAlwaysOnTop:isOnTop];
     
     if (isOnTop) {
         [self.clockWindow setLevel:NSFloatingWindowLevel];

@@ -78,6 +78,11 @@ NSString *const ClockSettingsChangedNotification = @"ClockSettingsChangedNotific
         [_defaults setBool:NO forKey:@"clickThrough"];
     }
     
+    // Default always on top: NO (window position is only saved when user moves the window)
+    if (![_defaults objectForKey:@"alwaysOnTop"]) {
+        [_defaults setBool:NO forKey:@"alwaysOnTop"];
+    }
+    
     // Default TZ Hand color: red (to distinguish from regular hour hand)
     if (![_defaults objectForKey:@"tzHandColor"]) {
         NSData *colorData = [NSKeyedArchiver archivedDataWithRootObject:[NSColor redColor] requiringSecureCoding:NO error:nil];
@@ -222,6 +227,31 @@ NSString *const ClockSettingsChangedNotification = @"ClockSettingsChangedNotific
     // Clamp diameter between 100 and 2000 pixels
     CGFloat clampedDiameter = MAX(100.0, MIN(2000.0, diameter));
     [_defaults setDouble:clampedDiameter forKey:@"windowDiameter"];
+    [self notifySettingsChanged];
+}
+
+- (BOOL)hasSavedWindowPosition {
+    return [_defaults objectForKey:@"windowOriginX"] != nil;
+}
+
+- (NSPoint)windowOrigin {
+    CGFloat x = [_defaults doubleForKey:@"windowOriginX"];
+    CGFloat y = [_defaults doubleForKey:@"windowOriginY"];
+    return NSMakePoint(x, y);
+}
+
+- (void)setWindowOrigin:(NSPoint)origin {
+    [_defaults setDouble:origin.x forKey:@"windowOriginX"];
+    [_defaults setDouble:origin.y forKey:@"windowOriginY"];
+    // Don't notify - position is only used at launch and when saving from window
+}
+
+- (BOOL)alwaysOnTop {
+    return [_defaults boolForKey:@"alwaysOnTop"];
+}
+
+- (void)setAlwaysOnTop:(BOOL)alwaysOnTop {
+    [_defaults setBool:alwaysOnTop forKey:@"alwaysOnTop"];
     [self notifySettingsChanged];
 }
 
