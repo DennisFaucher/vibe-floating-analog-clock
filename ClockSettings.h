@@ -51,6 +51,15 @@ extern NSString *const ClockSettingsChangedNotification;
 - (NSString *)tzHandTimezone;
 - (void)setTzHandTimezone:(NSString *)timezoneIdentifier;
 
+// Saved window position
+- (BOOL)hasSavedWindowPosition;
+- (NSPoint)windowOrigin;
+- (void)setWindowOrigin:(NSPoint)origin;
+
+// Always on top
+- (BOOL)alwaysOnTop;
+- (void)setAlwaysOnTop:(BOOL)alwaysOnTop;
+
 // Notify observers of changes
 - (void)notifySettingsChanged;
 
